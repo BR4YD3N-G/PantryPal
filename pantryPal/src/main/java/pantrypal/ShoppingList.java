@@ -9,7 +9,7 @@ import java.util.List;
  * @author Kenyon Hanson
  */
 public class ShoppingList {
-    private List<ShoppingListItem> items; // List of shopping list items
+    private List<pantrypal.ShoppingListItem> items; // List of shopping list items
 
     /**
      * Constructor to initialize the shopping list.
@@ -23,7 +23,7 @@ public class ShoppingList {
      *
      * @param item The item to be added.
      */
-    public void addItem(ShoppingListItem item) {
+    public void addItem(pantrypal.ShoppingListItem item) {
         items.add(item);
     }
 
@@ -42,7 +42,7 @@ public class ShoppingList {
      *
      * @return A list of shopping list items.
      */
-    public List<ShoppingListItem> listItems() {
+    public List<pantrypal.ShoppingListItem> listItems() {
         return new ArrayList<>(items); // Return a copy to avoid modification.
     }
 

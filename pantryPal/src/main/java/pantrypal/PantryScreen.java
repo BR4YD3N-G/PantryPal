@@ -3,7 +3,6 @@ package pantrypal;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -14,7 +13,7 @@ public class PantryScreen extends JFrame {
     private DefaultTableModel pantryTableModel; // Table model for pantry items
     private JTable pantryTable; // Displays pantry items
     private JButton addItemButton, removeItemButton, checkExpirationButton;
-    private List<PantryItem> pantryItems; // List of pantry items
+    private List<pantrypal.PantryItem> pantryItems; // List of pantry items
 
     public PantryScreen() {
         setTitle("Pantry Manager");
@@ -86,7 +85,7 @@ public class PantryScreen extends JFrame {
                 String category = categoryField.getText();
 
                 // Create PantryItem and add to list
-                PantryItem item = new PantryItem(itemName, quantity, unit, expirationDate, category);
+                pantrypal.PantryItem item = new pantrypal.PantryItem(itemName, quantity, unit, expirationDate, category);
                 pantryItems.add(item);
 
                 // Update table
@@ -114,7 +113,7 @@ public class PantryScreen extends JFrame {
     // Highlights expired items
     private void highlightExpiredItems() {
         for (int i = 0; i < pantryItems.size(); i++) {
-            PantryItem item = pantryItems.get(i);
+            pantrypal.PantryItem item = pantryItems.get(i);
             if (item.isExpired()) {
                 pantryTable.setRowSelectionInterval(i, i); // Select expired item
             }
