@@ -6,23 +6,42 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * PantryScreen is the screen where users can manage their pantry items.
+ * It displays a table of pantry items and provides buttons for adding, removing,
+ * and checking the expiration of items.
+ * 
+ * @author Kenyon Hanson
+ */
+
+@SuppressWarnings("serial")
 public class PantryScreen extends JFrame {
     private DefaultTableModel pantryTableModel; // Table model for pantry items
     private JTable pantryTable; // Displays pantry items
-    private JButton addItemButton, removeItemButton, checkExpirationButton;
-    private List<pantrypal.PantryItem> pantryItems; // List of pantry items
+    private JButton addItemButton, removeItemButton, checkExpirationButton, backToHomeButton;
+    private List<PantryItem> pantryItems; // List of pantry items
+    @SuppressWarnings("unused")
+	private PantryApp app;  // Reference to PantryApp for managing user data
 
-    public PantryScreen() {
+    /**
+     * Constructor to initialize PantryScreen with a reference to the PantryApp instance.
+     * Sets up the layout, pantry items, table, and buttons for user interaction.
+     *
+     * @param app The PantryApp instance used for managing pantry items and user data.
+     */
+    
+    public PantryScreen(PantryApp app) {
+        this.app = app;
+
         setTitle("Pantry Manager");
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Initialize pantryItems
-        pantryItems = new ArrayList<>();
+        // Initialize pantryItems from current user's pantry
+        this.pantryItems = app.getCurrentUser().viewPantry();
 
         // Table setup
         String[] columnNames = {"Item Name", "Quantity", "Unit", "Expiration Date", "Category"};
@@ -34,12 +53,14 @@ public class PantryScreen extends JFrame {
         addItemButton = new JButton("Add Item");
         removeItemButton = new JButton("Remove Item");
         checkExpirationButton = new JButton("Check Expiration");
+        backToHomeButton = new JButton("Back to Home");
 
         // Button panel
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(addItemButton);
         buttonPanel.add(removeItemButton);
         buttonPanel.add(checkExpirationButton);
+        buttonPanel.add(backToHomeButton);
 
         // Add components to frame
         add(new JLabel("Manage Your Pantry:"), BorderLayout.NORTH);
@@ -50,9 +71,21 @@ public class PantryScreen extends JFrame {
         addItemButton.addActionListener(e -> openAddItemDialog());
         removeItemButton.addActionListener(e -> removeSelectedItem());
         checkExpirationButton.addActionListener(e -> highlightExpiredItems());
+
+        // Back to Home button action
+        backToHomeButton.addActionListener(e -> {
+            HomeScreen homeScreen = new HomeScreen(app); // Pass app to HomeScreen
+            homeScreen.setVisible(true);
+            dispose();  // Close current screen
+        });
     }
 
-    // Opens a dialog to add a new pantry item
+    /**
+     * Opens a dialog to allow the user to add a new pantry item.
+     * The user inputs the item name, quantity, unit, expiration date, and category.
+     * After validation, the item is added to the pantry and displayed in the table.
+     */
+    
     private void openAddItemDialog() {
         JPanel panel = new JPanel(new GridLayout(5, 2));
 
@@ -85,13 +118,13 @@ public class PantryScreen extends JFrame {
                 String category = categoryField.getText();
 
                 // Create PantryItem and add to list
-                pantrypal.PantryItem item = new pantrypal.PantryItem(itemName, quantity, unit, expirationDate, category);
+                PantryItem item = new PantryItem(itemName, quantity, unit, expirationDate, category);
                 pantryItems.add(item);
 
                 // Update table
-                pantryTableModel.addRow(new Object[]{
-                        item.getItemName(), item.getQuantity(), item.getUnit(),
-                        item.getExpirationDate().toString(), item.getCategory()
+                pantryTableModel.addRow(new Object[] {
+                    item.getItemName(), item.getQuantity(), item.getUnit(),
+                    item.getExpirationDate().toString(), item.getCategory()
                 });
             } catch (NumberFormatException | DateTimeParseException ex) {
                 JOptionPane.showMessageDialog(this, "Invalid input. Please check your fields.");
@@ -99,7 +132,11 @@ public class PantryScreen extends JFrame {
         }
     }
 
-    // Removes the selected pantry item
+    /**
+     * Removes the selected pantry item from the list and updates the table.
+     * If no item is selected, an error message is shown.
+     */
+    
     private void removeSelectedItem() {
         int selectedRow = pantryTable.getSelectedRow();
         if (selectedRow >= 0) {
@@ -110,22 +147,18 @@ public class PantryScreen extends JFrame {
         }
     }
 
-    // Highlights expired items
+    /**
+     * Highlights the pantry items that have expired.
+     * The expired items are selected in the table for easy identification.
+     */
+    
     private void highlightExpiredItems() {
         for (int i = 0; i < pantryItems.size(); i++) {
-            pantrypal.PantryItem item = pantryItems.get(i);
+            PantryItem item = pantryItems.get(i);
             if (item.isExpired()) {
                 pantryTable.setRowSelectionInterval(i, i); // Select expired item
             }
         }
-    }
-
-    // Main method for testing
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            PantryScreen frame = new PantryScreen();
-            frame.setVisible(true);
-        });
     }
 }
 
