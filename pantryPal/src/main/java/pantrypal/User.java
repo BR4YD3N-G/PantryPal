@@ -5,6 +5,7 @@ import java.nio.file.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.util.*;
 
 /**
@@ -22,6 +23,21 @@ public class User {
     private String username;         // The username of the user
     private String hashedPassword;   // The hashed password of the user
     private String salt;             // The unique salt for this user
+    
+    public String getUsername() {
+        return username;
+    }
+    
+    /**
+     * Validates the given password against the stored hashed password.
+     *
+     * @param password The plaintext password to validate
+     * @return True if the password is correct, false otherwise
+     */
+    public boolean validatePassword(String password) {
+        String hashedInputPassword = hashPassword(password, this.salt); // Hash the input password using the stored salt
+        return hashedInputPassword.equals(this.hashedPassword); // Compare with the stored hashed password
+    }
 
     /**
      * Constructs a User with the specified username and password.
@@ -113,27 +129,57 @@ public class User {
     }
 
     /**
-     * Retrieves a list of the user's pantry items.
+     * Retrieves a list of the user's pantry items in a user-friendly string format.
+     *
+     * @return A list of Strings representing pantry items
+     * @throws IOException If an I/O error occurs
+     */
+    public List<PantryItem> viewPantry() {
+        List<PantryItem> pantryItems = new ArrayList<>();
+        
+        try {
+            // Retrieve pantry items from the user's pantry file
+            pantryItems = getPantryItems(); // This will return List<PantryItem> based on your current setup
+        } catch (IOException e) {
+            // Handle the exception appropriately (log it, show an error message, etc.)
+            System.err.println("Error reading pantry items: " + e.getMessage());
+        }
+        
+        return pantryItems;
+    }
+
+    /**
+     * Retrieves a list of the user's pantry items from the file.
      *
      * @return A list of strings representing pantry items and quantities
      * @throws IOException If an I/O error occurs
      */
-    public List<String> getPantryItems() throws IOException {
+    /**
+     * Retrieves a list of the user's pantry items from the file.
+     *
+     * @return A list of PantryItem objects representing pantry items and quantities
+     * @throws IOException If an I/O error occurs
+     */
+    private List<PantryItem> getPantryItems() throws IOException {
         Path filePath = getPantryFilePath();
-        List<String> items = new ArrayList<>();
+        List<PantryItem> items = new ArrayList<>();
 
         if (Files.exists(filePath)) {
             List<String> allLines = Files.readAllLines(filePath);
 
             for (String line : allLines) {
                 String[] parts = line.split(",");
-                if (parts.length == 3) {
+                if (parts.length == 5) { // Ensure there are 5 parts (itemName, quantity, unit, expirationDate, category)
                     String userId = parts[0];
                     String itemName = parts[1];
-                    String quantity = parts[2];
+                    int quantity = Integer.parseInt(parts[2]);
+                    String unit = parts[3];
+                    LocalDate expirationDate = LocalDate.parse(parts[4]);
+                    String category = parts[5];
 
-                    if (userId.equals(id)) {
-                        items.add(String.format("%s: %s", itemName, quantity));
+                    if (userId.equals(id)) {  // Match the userId
+                        PantryItem item = new PantryItem(itemName, quantity, unit, expirationDate, category);
+                        items.add(item);  // Add the item to the list
                     }
                 }
             }
@@ -141,6 +187,7 @@ public class User {
 
         return items;
     }
+
 
     /**
      * Generates a unique 16-character alphanumeric ID.
