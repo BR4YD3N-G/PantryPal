@@ -5,6 +5,7 @@ package pantrypal;
  * 
  * @author Kenyon Hanson
  */
+
 public class ShoppingListItem {
     private final String itemName; // Name of the shopping list item
     private int quantity;          // Quantity of the item
@@ -19,8 +20,8 @@ public class ShoppingListItem {
      */
     public ShoppingListItem(String itemName, int quantity, String priority) {
         this.itemName = itemName;
-        this.quantity = quantity;
-        this.priority = priority;
+        this.quantity = (quantity > 0) ? quantity : 1; // Ensure positive quantity
+        this.priority = priority != null ? priority : "Medium"; // Default to "Medium" if no priority provided
     }
 
     /**
@@ -57,5 +58,47 @@ public class ShoppingListItem {
      */
     public void updateQuantity(int amount) {
         this.quantity += amount;
+        if (this.quantity < 0) { // Prevent quantity from going negative
+            this.quantity = 0;
+        }
+    }
+
+    /**
+     * Returns a string representation of the shopping list item.
+     *
+     * @return A string describing the item with name, quantity, and priority.
+     */
+    @Override
+    public String toString() {
+        return itemName + " (Quantity: " + quantity + ", Priority: " + priority + ")";
+    }
+
+    /**
+     * Compares this shopping list item with another for equality.
+     *
+     * @param obj The other object to compare.
+     * @return True if the items are equal (same name).
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        ShoppingListItem other = (ShoppingListItem) obj;
+        return itemName.equalsIgnoreCase(other.itemName); // Compare by name, ignoring case
+    }
+
+    /**
+     * Generates a hash code for the shopping list item.
+     *
+     * @return The hash code for this item.
+     */
+    @Override
+    public int hashCode() {
+        return itemName.toLowerCase().hashCode(); // Generate hash based on item name (case-insensitive)
     }
 }
+
