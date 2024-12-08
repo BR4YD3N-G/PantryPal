@@ -1,5 +1,6 @@
 package pantrypal;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,9 +24,9 @@ public class PantryApp {
     // Constructor to initialize the PantryApp with a name
     public PantryApp(String appName) {
         this.appName = appName;
-        this.userList = new ArrayList<>();
-        this.notifications = new ArrayList<>();  // Initialize the notifications list
-        this.shoppingList = new ArrayList<>();  // Initialize the shopping list
+        this.userList = User.loadUsers();
+        this.notifications = new ArrayList<>();
+        this.shoppingList = new ArrayList<>();
     }
 
     // Starts the application (placeholder method)
@@ -94,15 +95,9 @@ public class PantryApp {
     }
 
     // Main method to start the application
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // Create an instance of the application with the name "Pantry Manager"
         PantryApp pantryApp = new PantryApp("PantryPal");
-
-        // Register some test users
-        User user1 = new User("bob_bill", "password123");
-        User user2 = new User("greg_smith", "password456");
-        pantryApp.registerUser(user1);
-        pantryApp.registerUser(user2);
 
         // Set up the login screen and pass the PantryApp instance to it
         SwingUtilities.invokeLater(() -> {

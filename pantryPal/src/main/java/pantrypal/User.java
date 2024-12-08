@@ -24,9 +24,19 @@ public class User {
     private String hashedPassword;   // The hashed password of the user
     private String salt;             // The unique salt for this user
     
+    public String getId() {
+        return id;
+    }
     public String getUsername() {
         return username;
     }
+    public String getHashedPassword() {
+        return hashedPassword;
+    }
+    public String getSalt() {
+        return salt;
+    }
+
     
     /**
      * Validates the given password against the stored hashed password.
@@ -46,12 +56,71 @@ public class User {
      * @param username The username of the user
      * @param password The plaintext password of the user
      */
-    public User(String username, String password) {
+    public User(String username, String password) throws IOException {
         this.id = generateUniqueId();
         this.username = username;
         this.salt = generateSalt(); // Create a unique salt for this user
         this.hashedPassword = hashPassword(password, this.salt);
+        saveUser();
     }
+
+    /**
+     * Constructor to reconstruct a user from stored data.
+     *
+     * @param id The user's unique ID
+     * @param username The username
+     * @param hashedPassword The hashed password
+     * @param salt The salt used for hashing
+     */
+    public User(String id, String username, String hashedPassword, String salt) {
+        this.id = id;
+        this.username = username;
+        this.hashedPassword = hashedPassword;
+        this.salt = salt;
+    }
+
+    /**
+     * Static method to load users from the 'users.csv' file.
+     *
+     * @return A list of User objects loaded from the file
+     */
+    public static List<User> loadUsers() {
+        List<User> users = new ArrayList<>();
+        Path userFilePath = getUserFilePath();
+
+        // Check if the file exists
+        if (!Files.exists(userFilePath)) {
+            System.out.println("No user file found. Starting with an empty user list.");
+            return users; // Return empty list
+        }
+
+        try (BufferedReader reader = Files.newBufferedReader(userFilePath)) {
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+
+                if (parts.length == 4) { // Ensure valid data
+                    String id = parts[0];
+                    String username = parts[1];
+                    String hashedPassword = parts[2];
+                    String salt = parts[3];
+
+                    // Reconstruct the User object
+                    User user = new User(id, username, hashedPassword, salt);
+                    users.add(user);
+                }
+            }
+
+            System.out.println("Users loaded successfully.");
+        } catch (IOException e) {
+            System.err.println("Error loading users: " + e.getMessage());
+        }
+
+        return users;
+    }
+
+
 
     /**
      * Saves the user to a CSV file in the application's directory.
@@ -72,13 +141,14 @@ public class User {
     }
 
     /**
-     * Adds an item to the user's pantry.
+     * Adds an item to the pantry for a specific user ID.
      *
+     * @param userId   The ID of the user
      * @param itemName The name of the item
      * @param quantity The quantity of the item
      * @throws IOException If an I/O error occurs
      */
-    public void addToPantry(String itemName, int quantity) throws IOException {
+    public static void addToPantry(String userId, String itemName, String quantity, String unit, LocalDate expirationDate, String category) throws IOException {
         Path filePath = getPantryFilePath();
 
         // Ensure the directory exists
@@ -86,19 +156,20 @@ public class User {
 
         // Write or append pantry data
         try (BufferedWriter writer = Files.newBufferedWriter(filePath, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            String record = String.format("%s,%s,%d%n", id, itemName, quantity);
+            String record = String.format("%s,%s,%s,%s,%s,%s%n", userId, itemName, quantity, unit, expirationDate, category);
             writer.write(record);
         }
     }
 
     /**
-     * Removes an item from the user's pantry.
+     * Removes an item from the pantry for a specific user ID.
      *
+     * @param userId   The ID of the user
      * @param itemName The name of the item to remove
      * @return True if the item was removed, false otherwise
      * @throws IOException If an I/O error occurs
      */
-    public boolean removeFromPantry(String itemName) throws IOException {
+    public static boolean removeFromPantry(String userId, String itemName) throws IOException {
         Path filePath = getPantryFilePath();
 
         if (!Files.exists(filePath)) {
@@ -112,10 +183,10 @@ public class User {
         for (String line : allLines) {
             String[] parts = line.split(",");
             if (parts.length == 3) {
-                String userId = parts[0];
+                String storedUserId = parts[0];
                 String item = parts[1];
 
-                if (userId.equals(id) && item.equals(itemName)) {
+                if (storedUserId.equals(userId) && item.equals(itemName)) {
                     removed = true; // Skip this line to "remove" it
                 } else {
                     updatedLines.add(line);
@@ -127,6 +198,7 @@ public class User {
         Files.write(filePath, updatedLines);
         return removed;
     }
+
 
     /**
      * Retrieves a list of the user's pantry items in a user-friendly string format.

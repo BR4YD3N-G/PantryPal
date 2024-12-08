@@ -3,6 +3,7 @@ package pantrypal;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 /**
  * The RegisterScreen class represents the user interface for the registration process.
@@ -78,8 +79,10 @@ public class RegisterScreen extends JFrame {
                     loginScreen.setVisible(true);
                     dispose(); // Close the register screen
                 } catch (IllegalArgumentException ex) {
-                    // Show error message if the username already exists
+                    // Show error message if the username already exists8
                     JOptionPane.showMessageDialog(RegisterScreen.this, "Username already exists.", "Error", JOptionPane.ERROR_MESSAGE);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
                 }
             }
         });

@@ -3,6 +3,7 @@ package pantrypal;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -118,6 +119,7 @@ public class PantryScreen extends JFrame {
                 String category = categoryField.getText();
 
                 // Create PantryItem and add to list
+                User.addToPantry("23",itemName, String.valueOf(quantity), unit, expirationDate, category);
                 PantryItem item = new PantryItem(itemName, quantity, unit, expirationDate, category);
                 pantryItems.add(item);
 
@@ -128,6 +130,8 @@ public class PantryScreen extends JFrame {
                 });
             } catch (NumberFormatException | DateTimeParseException ex) {
                 JOptionPane.showMessageDialog(this, "Invalid input. Please check your fields.");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
     }
